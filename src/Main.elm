@@ -2,7 +2,9 @@ module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
 import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (src)
+import Html.Styled.Attributes exposing (..)
+import Inventory
+import Item exposing (Item, Kind(..))
 
 
 
@@ -24,12 +26,12 @@ main =
 
 
 type alias Model =
-    {}
+    { inventory : Result String (List Item) }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( {}, Cmd.none )
+    ( { inventory = Inventory.generate }, Cmd.none )
 
 
 
@@ -52,6 +54,35 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ img [ src "/logo.svg" ] []
-        , h1 [] [ text "Your Elm App is working!" ]
+        [ h1 [] [ text "風来のシレン５ フォーチュンタワーと運命のダイス 値段識別" ]
+        , viewInventory model
+        ]
+
+
+viewInventory : Model -> Html Msg
+viewInventory model =
+    case model.inventory of
+        Err msg ->
+            div [ class "alert alert-danger" ] [ text msg ]
+
+        Ok items ->
+            table []
+                [ thead []
+                    [ th [] [ text "種別" ]
+                    , th [] [ text "名前" ]
+                    ]
+                , tbody []
+                    (List.map viewItemRow items)
+                ]
+
+
+viewItemRow : Item -> Html Msg
+viewItemRow item =
+    let
+        i =
+            Item.exposeInternals item
+    in
+    tr []
+        [ td [] [ text (i.kind |> Item.kindToString) ]
+        , td [] [ text i.name ]
         ]

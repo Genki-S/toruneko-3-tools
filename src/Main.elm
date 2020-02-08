@@ -30,6 +30,7 @@ main =
 type alias Model =
     { inventory : Result String (List Item)
     , priceInput : Int
+    , showCredit : Bool
     }
 
 
@@ -37,6 +38,7 @@ init : ( Model, Cmd Msg )
 init =
     ( { inventory = Inventory.generate
       , priceInput = 0
+      , showCredit = True
       }
     , Cmd.none
     )
@@ -49,6 +51,7 @@ init =
 type Msg
     = PressNumber Int
     | ClearInput
+    | HideCredit
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -64,6 +67,9 @@ update msg model =
         ClearInput ->
             ( { model | priceInput = 0 }, Cmd.none )
 
+        HideCredit ->
+            ( { model | showCredit = False }, Cmd.none )
+
 
 
 ---- VIEW ----
@@ -72,7 +78,12 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div [ class "container", css [ Css.height (pct 100) ] ]
-        [ div [ css [ Css.height (pct 60), overflowY scroll ] ] [ viewItems model ]
+        [ if model.showCredit then
+            viewCredit
+
+          else
+            span [] []
+        , div [ css [ Css.height (pct 60), overflowY scroll ] ] [ viewItems model ]
         , div
             [ css
                 [ position fixed
@@ -84,6 +95,17 @@ view model =
                 ]
             ]
             [ viewPriceInput model ]
+        ]
+
+
+viewCredit : Html Msg
+viewCredit =
+    div [ class "alert alert-dismissible alert-info" ]
+        [ text "本アプリは2020/02/08時点での"
+        , a [ href "https://seesaawiki.jp/w/shiren5/d/%C3%CD%C3%CA%B0%EC%CD%F7%C9%BD" ]
+            [ text "風来のシレン５ フォーチュンタワーと運命のダイス Wiki" ]
+        , text "様の情報を元に作成されました"
+        , button [ class "close", onClick HideCredit ] [ text "×" ]
         ]
 
 

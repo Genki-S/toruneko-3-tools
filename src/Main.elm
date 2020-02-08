@@ -71,19 +71,51 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [ class "container" ]
-        [ viewInventory model
-        , viewPriceInput model
+    div [ class "container", css [ Css.height (pct 100) ] ]
+        [ div [ css [ Css.height (pct 60), overflowY scroll ] ] [ viewItems model ]
+        , div
+            [ css
+                [ position fixed
+                , Css.height (pct 40)
+                , bottom (px 0)
+                , right (px 0)
+                , left (px 0)
+                , backgroundColor (hex "EEEEEE")
+                ]
+            ]
+            [ viewPriceInput model ]
         ]
 
 
-viewInventory : Model -> Html Msg
-viewInventory model =
+viewItems : Model -> Html Msg
+viewItems model =
     case model.inventory of
         Err msg ->
             div [ class "alert alert-danger" ] [ text msg ]
 
         Ok items ->
+            let
+                priceMatches item =
+                    let
+                        i =
+                            Item.exposeInternals item
+
+                        buyingPrice =
+                            i.price
+
+                        sellingPrice =
+                            Item.calculateSellingPrice item
+                    in
+                    model.priceInput == buyingPrice || model.priceInput == sellingPrice
+
+                filteredItems =
+                    case model.priceInput of
+                        0 ->
+                            items
+
+                        _ ->
+                            List.filter priceMatches items
+            in
             Html.Styled.table [ class "table" ]
                 [ thead [ class "thead-dark" ]
                     [ th [] [ text "種別" ]
@@ -93,7 +125,7 @@ viewInventory model =
                     , th [] [ text "売値" ]
                     ]
                 , tbody []
-                    (List.map viewItemRow items)
+                    (List.map viewItemRow filteredItems)
                 ]
 
 
@@ -122,27 +154,16 @@ viewItemRow item =
 
 viewPriceInput : Model -> Html Msg
 viewPriceInput model =
-    div
-        [ css
-            [ position fixed
-            , Css.height (pct 40)
-            , bottom (px 0)
-            , right (px 0)
-            , left (px 0)
-            , backgroundColor (hex "EEEEEE")
+    div [ class "container", css [ padding (px 10) ] ]
+        [ input
+            [ class "form-control"
+            , type_ "number"
+            , value (String.fromInt model.priceInput)
+            , Html.Styled.Attributes.disabled True
+            , css [ textAlign right ]
             ]
-        ]
-        [ div [ class "container", css [ padding (px 10) ] ]
-            [ input
-                [ class "form-control"
-                , type_ "number"
-                , value (String.fromInt model.priceInput)
-                , Html.Styled.Attributes.disabled True
-                , css [ textAlign right ]
-                ]
-                []
-            , viewCalculator model
-            ]
+            []
+        , viewCalculator model
         ]
 
 

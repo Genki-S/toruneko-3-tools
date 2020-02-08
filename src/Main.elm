@@ -53,9 +53,8 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ h1 [] [ text "風来のシレン５ フォーチュンタワーと運命のダイス 値段識別" ]
-        , viewInventory model
+    div [ class "container" ]
+        [ viewInventory model
         ]
 
 
@@ -66,7 +65,7 @@ viewInventory model =
             div [ class "alert alert-danger" ] [ text msg ]
 
         Ok items ->
-            table []
+            table [ class "table" ]
                 [ thead []
                     [ th [] [ text "種別" ]
                     , th [] [ text "名前" ]

@@ -6,6 +6,20 @@ import Html.Styled.Attributes exposing (src)
 
 
 
+---- PROGRAM ----
+
+
+main : Program () Model Msg
+main =
+    Browser.element
+        { view = \m -> view m |> toUnstyled
+        , init = \_ -> init
+        , update = update
+        , subscriptions = always Sub.none
+        }
+
+
+
 ---- MODEL ----
 
 
@@ -41,17 +55,3 @@ view model =
         [ img [ src "/logo.svg" ] []
         , h1 [] [ text "Your Elm App is working!" ]
         ]
-
-
-
----- PROGRAM ----
-
-
-main : Program () Model Msg
-main =
-    Browser.element
-        { view = \m -> view m |> toUnstyled
-        , init = \_ -> init
-        , update = update
-        , subscriptions = always Sub.none
-        }

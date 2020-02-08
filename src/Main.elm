@@ -1,6 +1,7 @@
 module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
+import Css exposing (..)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
 import Inventory
@@ -55,6 +56,7 @@ view : Model -> Html Msg
 view model =
     div [ class "container" ]
         [ viewInventory model
+        , viewPriceInput model
         ]
 
 
@@ -65,8 +67,8 @@ viewInventory model =
             div [ class "alert alert-danger" ] [ text msg ]
 
         Ok items ->
-            table [ class "table" ]
-                [ thead []
+            Html.Styled.table [ class "table" ]
+                [ thead [ class "thead-dark" ]
                     [ th [] [ text "種別" ]
                     , th [] [ text "名前" ]
                     , th [] [ text "回数" ]
@@ -98,4 +100,21 @@ viewItemRow item =
         , td [] [ text remainingText ]
         , td [] [ text (String.fromInt i.price) ]
         , td [] [ text (String.fromInt (Item.calculateSellingPrice item)) ]
+        ]
+
+
+viewPriceInput : Model -> Html Msg
+viewPriceInput model =
+    div
+        [ css
+            [ position fixed
+            , Css.height (pct 40)
+            , bottom (px 0)
+            , right (px 0)
+            , left (px 0)
+            , backgroundColor (hex "EEEEEE")
+            ]
+        ]
+        [ div [ class "container" ]
+            [ text "TODO: input area" ]
         ]

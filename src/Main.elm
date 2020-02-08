@@ -4,6 +4,7 @@ import Browser
 import Css exposing (..)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
+import Html.Styled.Events exposing (..)
 import Inventory
 import Item exposing (Item, Kind(..))
 
@@ -27,12 +28,18 @@ main =
 
 
 type alias Model =
-    { inventory : Result String (List Item) }
+    { inventory : Result String (List Item)
+    , priceInput : Int
+    }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { inventory = Inventory.generate }, Cmd.none )
+    ( { inventory = Inventory.generate
+      , priceInput = 0
+      }
+    , Cmd.none
+    )
 
 
 
@@ -40,12 +47,22 @@ init =
 
 
 type Msg
-    = NoOp
+    = PressNumber Int
+    | ClearInput
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        PressNumber i ->
+            let
+                newPriceInput =
+                    model.priceInput * 10 + i
+            in
+            ( { model | priceInput = newPriceInput }, Cmd.none )
+
+        ClearInput ->
+            ( { model | priceInput = 0 }, Cmd.none )
 
 
 
@@ -115,6 +132,60 @@ viewPriceInput model =
             , backgroundColor (hex "EEEEEE")
             ]
         ]
-        [ div [ class "container" ]
-            [ text "TODO: input area" ]
+        [ div [ class "container", css [ padding (px 10) ] ]
+            [ input
+                [ class "form-control"
+                , type_ "number"
+                , value (String.fromInt model.priceInput)
+                , Html.Styled.Attributes.disabled True
+                , css [ textAlign right ]
+                ]
+                []
+            , viewCalculator model
+            ]
         ]
+
+
+viewCalculator : Model -> Html Msg
+viewCalculator model =
+    let
+        numberRows =
+            [ [ 7, 8, 9 ], [ 4, 5, 6 ], [ 1, 2, 3 ] ]
+                |> List.map (viewCalculatorRow model)
+
+        lastRow =
+            [ tr []
+                [ viewCalculatorCell model 0 2
+                , td [] [ viewCalculatorButton model ClearInput "C" ]
+                ]
+            ]
+
+        rows =
+            List.append numberRows lastRow
+    in
+    Html.Styled.table
+        [ class "table table-borderless"
+        , css [ textAlign center ]
+        ]
+        rows
+
+
+viewCalculatorRow : Model -> List Int -> Html Msg
+viewCalculatorRow model numbers =
+    tr [] (List.map (\n -> viewCalculatorCell model n 1) numbers)
+
+
+viewCalculatorCell : Model -> Int -> Int -> Html Msg
+viewCalculatorCell model n cs =
+    td [ colspan cs ]
+        [ viewCalculatorButton model (PressNumber n) (String.fromInt n) ]
+
+
+viewCalculatorButton : Model -> Msg -> String -> Html Msg
+viewCalculatorButton model msgOnClick s =
+    button
+        [ class "btn btn-light"
+        , onClick msgOnClick
+        , css [ Css.width (pct 100) ]
+        ]
+        [ text s ]

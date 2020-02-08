@@ -1,8 +1,9 @@
-module Main exposing (..)
+module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
-import Html exposing (Html, text, div, h1, img)
-import Html.Attributes exposing (src)
+import Html.Styled exposing (..)
+import Html.Styled.Attributes exposing (src)
+
 
 
 ---- MODEL ----
@@ -49,7 +50,7 @@ view model =
 main : Program () Model Msg
 main =
     Browser.element
-        { view = view
+        { view = \m -> view m |> toUnstyled
         , init = \_ -> init
         , update = update
         , subscriptions = always Sub.none

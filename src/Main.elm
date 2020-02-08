@@ -70,6 +70,7 @@ viewInventory model =
                 [ thead []
                     [ th [] [ text "種別" ]
                     , th [] [ text "名前" ]
+                    , th [] [ text "回数" ]
                     , th [] [ text "買値" ]
                     , th [] [ text "売値" ]
                     ]
@@ -83,10 +84,19 @@ viewItemRow item =
     let
         i =
             Item.exposeInternals item
+
+        remainingText =
+            case i.remaining of
+                Nothing ->
+                    ""
+
+                Just r ->
+                    String.fromInt r
     in
     tr []
         [ td [] [ text (i.kind |> Item.kindToString) ]
         , td [] [ text i.name ]
+        , td [] [ text remainingText ]
         , td [] [ text (String.fromInt i.price) ]
         , td [] [ text (String.fromInt (Item.calculateSellingPrice item)) ]
         ]

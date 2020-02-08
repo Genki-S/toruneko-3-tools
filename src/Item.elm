@@ -1,4 +1,4 @@
-module Item exposing (Item, Kind(..), calculateSellingPrice, exposeInternals, kindToString, new)
+module Item exposing (Item, Kind(..), calculateSellingPrice, exposeInternals, kindToString, new, newConsumables)
 
 
 type Item
@@ -10,12 +10,15 @@ type Kind
     | Herb
     | Bracelet
     | Bill
+    | Wand
+    | Vase
 
 
 type alias Internals =
     { kind : Kind
     , name : String
     , price : Int
+    , remaining : Maybe Int
     }
 
 
@@ -25,7 +28,22 @@ new kind name price =
         { kind = kind
         , name = name
         , price = price
+        , remaining = Nothing
         }
+
+
+newConsumables : Kind -> String -> Int -> Int -> Int -> List Item
+newConsumables kind name basePrice priceIncrement maxAvailability =
+    List.range 0 maxAvailability
+        |> List.map
+            (\remaining ->
+                Item
+                    { kind = kind
+                    , name = name
+                    , price = basePrice + (remaining * priceIncrement)
+                    , remaining = Just remaining
+                    }
+            )
 
 
 exposeInternals : Item -> Internals
@@ -35,7 +53,7 @@ exposeInternals (Item i) =
 
 calculateSellingPrice : Item -> Int
 calculateSellingPrice (Item i) =
-    toFloat i.price * 0.35 |> floor
+    i.price * 35 // 100
 
 
 kindToString : Kind -> String
@@ -52,3 +70,9 @@ kindToString kind =
 
         Bill ->
             "札"
+
+        Wand ->
+            "杖"
+
+        Vase ->
+            "壺"

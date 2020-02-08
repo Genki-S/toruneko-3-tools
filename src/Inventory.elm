@@ -6,7 +6,7 @@ import Item exposing (Item, Kind(..))
 generate : Result String (List Item)
 generate =
     Ok
-        (List.concat [ scrolls, herbs, bracelets, bills ])
+        (List.concat [ scrolls, herbs, bracelets, bills, wands, vases ])
 
 
 scrolls : List Item
@@ -177,3 +177,81 @@ bills =
     , gen "オオイカリの札" 600
     , gen "しあわせの札" 600
     ]
+
+
+wands : List Item
+wands =
+    let
+        gen name basePrice priceIncrement =
+            Item.newConsumables Wand name basePrice priceIncrement 7
+    in
+    [ gen "場所がえの杖" 600 30
+    , gen "吹き飛ばしの杖" 600 30
+    , gen "飛びつきの杖" 600 30
+    , gen "鈍足の杖" 600 30
+    , gen "加速の杖" 600 30
+    , gen "魔道の杖" 600 30
+    , gen "一時しのぎの杖" 900 45
+    , gen "かなしばりの杖" 900 45
+    , gen "痛み分けの杖" 900 45
+    , gen "ただの杖" 900 45
+    , gen "ワナ消しの杖" 900 45
+    , gen "転ばぬ先の杖" 900 45
+    , gen "かなしばいの杖" 900 45
+    , gen "転ばぬ先生の杖" 900 45
+    , gen "感電の杖" 1200 60
+    , gen "盛電の杖" 1200 60
+    , gen "封印の杖" 1500 75
+    , gen "身代わりの杖" 1500 75
+    , gen "身伐わりの杖" 1500 75
+    , gen "しあわせの杖" 1800 90
+    , gen "不幸の杖" 1800 90
+    , gen "トンネルの杖" 1800 90
+    , gen "土塊の杖" 1800 90
+    , gen "しわよせの杖" 1800 90
+    ]
+        |> List.concat
+
+
+vases : List Item
+vases =
+    let
+        gen name basePrice priceIncrement =
+            Item.newConsumables Vase name basePrice priceIncrement 5
+    in
+    [ gen "保存の壺" 600 30
+    , gen "ただの壺" 600 30
+    , gen "識別の壺" 600 30
+    , gen "やりすごしの壺" 600 30
+    , gen "四二鉢" 600 30
+    , gen "換金の壺" 1000 50
+    , gen "変化の壺" 1000 50
+    , gen "変花の壺" 1000 50
+    , gen "底抜けの壺" 1000 50
+    , gen "フィーバーの壺" 1000 50
+    , gen "手封じの壺" 1000 50
+    , gen "割れない壺" 1000 50
+    , gen "おはらいの壺" 1600 80
+    , gen "祝福の壺" 1600 80
+    , gen "たたりの壺" 1600 80
+    , gen "水がめ" 2000 100
+    , gen "天上の器" 2000 100
+    , gen "冷えびえ香の壺" 2500 125
+    , gen "身かわし香の壺" 2500 125
+    , gen "目配り香の壺" 2500 125
+    , gen "山彦香の壺" 2500 125
+    , gen "背中の壺" 3500 175
+    , gen "トドの壺" 3500 175
+    , gen "笑いの壺" 3500 175
+    , gen "クラインの壺" 3500 175
+    , gen "魔物の壺" 3500 175
+    , gen "乙女の祈りの壺" 3500 175
+    , gen "合成の壺" 6000 300
+    , gen "合城の壺" 6000 300
+    , gen "強化の壺" 10000 500
+    , gen "弱化の壺" 10000 500
+    , gen "福寄せの壺" 10000 500
+    , gen "厄寄せの壺" 10000 500
+    , gen "強イヒの壺" 10000 500
+    ]
+        |> List.concat

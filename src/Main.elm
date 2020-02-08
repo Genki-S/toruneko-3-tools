@@ -70,6 +70,8 @@ viewInventory model =
                 [ thead []
                     [ th [] [ text "種別" ]
                     , th [] [ text "名前" ]
+                    , th [] [ text "買値" ]
+                    , th [] [ text "売値" ]
                     ]
                 , tbody []
                     (List.map viewItemRow items)
@@ -85,4 +87,6 @@ viewItemRow item =
     tr []
         [ td [] [ text (i.kind |> Item.kindToString) ]
         , td [] [ text i.name ]
+        , td [] [ text (String.fromInt i.price) ]
+        , td [] [ text (String.fromInt (Item.calculateSellingPrice item)) ]
         ]

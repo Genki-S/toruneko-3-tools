@@ -6,7 +6,7 @@ import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
 import Html.Styled.Events exposing (..)
 import Inventory
-import Item exposing (Item, Kind(..))
+import Item exposing (BlessState(..), Item, Kind(..))
 
 
 
@@ -117,13 +117,18 @@ viewItems model =
 
         Ok items ->
             let
+                allItems =
+                    items
+                        |> List.map (\i -> [ i, Item.asBlessed i, Item.asCursed i ])
+                        |> List.concat
+
                 priceMatches item =
                     let
                         i =
                             Item.exposeInternals item
 
                         buyingPrice =
-                            i.price
+                            Item.calculateBuyingPrice item
 
                         sellingPrice =
                             Item.calculateSellingPrice item
@@ -133,16 +138,17 @@ viewItems model =
                 filteredItems =
                     case model.priceInput of
                         0 ->
-                            items
+                            allItems
 
                         _ ->
-                            List.filter priceMatches items
+                            List.filter priceMatches allItems
             in
             Html.Styled.table [ class "table" ]
                 [ thead [ class "thead-dark" ]
                     [ th [] [ text "種別" ]
                     , th [] [ text "名前" ]
                     , th [] [ text "回数" ]
+                    , th [] [ text "祝福" ]
                     , th [] [ text "買値" ]
                     , th [] [ text "売値" ]
                     ]
@@ -164,12 +170,24 @@ viewItemRow item =
 
                 Just r ->
                     String.fromInt r
+
+        blessedText =
+            case i.blessState of
+                Nothing ->
+                    ""
+
+                Just Blessed ->
+                    "祝福"
+
+                Just Cursed ->
+                    "呪い"
     in
     tr []
         [ td [] [ text (i.kind |> Item.kindToString) ]
         , td [] [ text i.name ]
         , td [] [ text remainingText ]
-        , td [] [ text (String.fromInt i.price) ]
+        , td [] [ text blessedText ]
+        , td [] [ text (String.fromInt (Item.calculateBuyingPrice item)) ]
         , td [] [ text (String.fromInt (Item.calculateSellingPrice item)) ]
         ]
 

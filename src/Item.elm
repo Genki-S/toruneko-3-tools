@@ -1,4 +1,4 @@
-module Item exposing (Item, Kind(..), calculateSellingPrice, exposeInternals, kindToString, new, newConsumables)
+module Item exposing (BlessState(..), Item, Kind(..), asBlessed, asCursed, calculateBuyingPrice, calculateSellingPrice, exposeInternals, kindToString, new, newConsumables)
 
 
 type Item
@@ -14,21 +14,30 @@ type Kind
     | Vase
 
 
+type BlessState
+    = Blessed
+    | Cursed
+
+
 type alias Internals =
     { kind : Kind
     , name : String
-    , price : Int
+    , basePrice : Int
+    , priceIncrement : Maybe Int
     , remaining : Maybe Int
+    , blessState : Maybe BlessState
     }
 
 
 new : Kind -> String -> Int -> Item
-new kind name price =
+new kind name basePrice =
     Item
         { kind = kind
         , name = name
-        , price = price
+        , basePrice = basePrice
+        , priceIncrement = Nothing
         , remaining = Nothing
+        , blessState = Nothing
         }
 
 
@@ -40,10 +49,22 @@ newConsumables kind name basePrice priceIncrement maxAvailability =
                 Item
                     { kind = kind
                     , name = name
-                    , price = basePrice + (remaining * priceIncrement)
+                    , basePrice = basePrice
                     , remaining = Just remaining
+                    , priceIncrement = Just priceIncrement
+                    , blessState = Nothing
                     }
             )
+
+
+asBlessed : Item -> Item
+asBlessed (Item i) =
+    Item { i | blessState = Just Blessed }
+
+
+asCursed : Item -> Item
+asCursed (Item i) =
+    Item { i | blessState = Just Cursed }
 
 
 exposeInternals : Item -> Internals
@@ -51,9 +72,46 @@ exposeInternals (Item i) =
     i
 
 
+calculateBuyingPrice : Item -> Int
+calculateBuyingPrice (Item i) =
+    let
+        price =
+            case ( i.remaining, i.priceIncrement ) of
+                ( Just r, Just inc ) ->
+                    i.basePrice + (r * inc)
+
+                ( _, _ ) ->
+                    i.basePrice
+    in
+    case i.blessState of
+        Nothing ->
+            price
+
+        Just Blessed ->
+            price * 11 // 10
+
+        Just Cursed ->
+            price * 8 // 10
+
+
 calculateSellingPrice : Item -> Int
 calculateSellingPrice (Item i) =
-    i.price * 35 // 100
+    let
+        notBlessedItem =
+            Item { i | blessState = Nothing }
+
+        price =
+            calculateBuyingPrice notBlessedItem * 35 // 100
+    in
+    case i.blessState of
+        Nothing ->
+            price
+
+        Just Blessed ->
+            price * 11 // 10
+
+        Just Cursed ->
+            price * 8 // 10
 
 
 kindToString : Kind -> String

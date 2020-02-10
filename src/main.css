@@ -16,3 +16,8 @@ body {
 html, body {
   height: 100%;
 }
+
+/* disable double top zoom : https://stackoverflow.com/questions/10614481/disable-double-tap-zoom-option-in-browser-on-touch-devices */
+* {
+  touch-action: manipulation;
+}

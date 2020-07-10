@@ -6,7 +6,7 @@ import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
 import Html.Styled.Events exposing (..)
 import Inventory
-import Item exposing (BlessState(..), Item, Kind(..))
+import Item exposing (Item, Kind(..))
 
 
 
@@ -101,9 +101,9 @@ view model =
 viewCredit : Html Msg
 viewCredit =
     div [ class "alert alert-dismissible alert-info" ]
-        [ text "本アプリは2020/02/08時点での"
-        , a [ href "https://seesaawiki.jp/w/shiren5/d/%C3%CD%C3%CA%B0%EC%CD%F7%C9%BD" ]
-            [ text "風来のシレン５ フォーチュンタワーと運命のダイス Wiki" ]
+        [ text "本アプリは2020/07/10時点での"
+        , a [ href "https://www.pegasusknight.com/mb/tr3/index.html" ]
+            [ text "www.pegasusknight.com" ]
         , text "様の情報を元に作成されました"
         , button [ class "close", onClick HideCredit ] [ text "×" ]
         ]
@@ -117,38 +117,25 @@ viewItems model =
 
         Ok items ->
             let
-                allItems =
-                    items
-                        |> List.map (\i -> [ i, Item.asBlessed i, Item.asCursed i ])
-                        |> List.concat
-
                 priceMatches item =
                     let
                         i =
                             Item.exposeInternals item
-
-                        buyingPrice =
-                            Item.calculateBuyingPrice item
-
-                        sellingPrice =
-                            Item.calculateSellingPrice item
                     in
-                    model.priceInput == buyingPrice || model.priceInput == sellingPrice
+                    model.priceInput == i.buyPrice || model.priceInput == i.sellPrice
 
                 filteredItems =
                     case model.priceInput of
                         0 ->
-                            allItems
+                            items
 
                         _ ->
-                            List.filter priceMatches allItems
+                            List.filter priceMatches items
             in
             Html.Styled.table [ class "table" ]
                 [ thead [ class "thead-dark" ]
                     [ th [] [ text "種別" ]
                     , th [] [ text "名前" ]
-                    , th [] [ text "回数" ]
-                    , th [] [ text "祝福" ]
                     , th [] [ text "買値" ]
                     , th [] [ text "売値" ]
                     ]
@@ -162,33 +149,12 @@ viewItemRow item =
     let
         i =
             Item.exposeInternals item
-
-        remainingText =
-            case i.remaining of
-                Nothing ->
-                    ""
-
-                Just r ->
-                    String.fromInt r
-
-        blessedText =
-            case i.blessState of
-                Nothing ->
-                    ""
-
-                Just Blessed ->
-                    "祝福"
-
-                Just Cursed ->
-                    "呪い"
     in
     tr []
         [ td [] [ text (i.kind |> Item.kindToString) ]
         , td [] [ text i.name ]
-        , td [] [ text remainingText ]
-        , td [] [ text blessedText ]
-        , td [] [ text (String.fromInt (Item.calculateBuyingPrice item)) ]
-        , td [] [ text (String.fromInt (Item.calculateSellingPrice item)) ]
+        , td [] [ text (String.fromInt i.buyPrice) ]
+        , td [] [ text (String.fromInt i.sellPrice) ]
         ]
 
 

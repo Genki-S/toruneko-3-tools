@@ -139,6 +139,7 @@ type FilterGroupID
 type Msg
     = UpdateSearchInput String
     | MarkItemAsIdentified Item Bool
+    | ClearIdentifiedItems
     | HideCredit
     | EnableFilter FilterGroupID FilterItemID Bool
 
@@ -159,6 +160,9 @@ update msg model =
                         List.filter (\n -> n /= Item.name item) model.identifiedItemNames
             in
             ( { model | identifiedItemNames = updatedList }, storeIdentifiedItemNames updatedList )
+
+        ClearIdentifiedItems ->
+            ( model, clearIdentifiedItemNames () )
 
         HideCredit ->
             ( { model | showCredit = False }, Cmd.none )
@@ -204,6 +208,7 @@ view model =
 
           else
             span [] []
+        , div [] [ viewIdentifiedStateClearButton model ]
         , div [] [ viewSearchBox model ]
         , div [] [ viewFilterGroups model ]
         , div [] [ viewItems model ]
@@ -218,6 +223,14 @@ viewCredit =
             [ text "www.pegasusknight.com" ]
         , text "様の情報を元に作成されました"
         , button [ class "close", onClick HideCredit ] [ text "×" ]
+        ]
+
+
+viewIdentifiedStateClearButton : Model -> Html Msg
+viewIdentifiedStateClearButton model =
+    div [ css [ marginBottom (px 5) ] ]
+        [ button [ class "btn btn-danger", onClick ClearIdentifiedItems ]
+            [ text "識別リセット" ]
         ]
 
 
@@ -328,3 +341,6 @@ viewItemRow model item =
 
 
 port storeIdentifiedItemNames : List String -> Cmd msg
+
+
+port clearIdentifiedItemNames : () -> Cmd msg

@@ -297,7 +297,7 @@ viewItems model =
                 filteredItems =
                     Filter.applyFilters filters items
             in
-            Html.Styled.table [ class "table" ]
+            Html.Styled.table [ class "table item-table" ]
                 [ thead [ class "thead-dark" ]
                     [ th [] [ text "種別" ]
                     , th [] [ text "名前" ]

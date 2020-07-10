@@ -21,3 +21,9 @@ html, body {
 * {
   touch-action: manipulation;
 }
+
+/* App styling */
+
+.item-table th,td {
+  text-align: center;
+}

@@ -2,7 +2,7 @@
 
 set -euxo pipefail
 
-git branch -D tmp
+git branch -D tmp || :
 git checkout -b tmp
 
 PUBLIC_URL="https://genki-s.github.io/toruneko-3-tools/" elm-app build

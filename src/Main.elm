@@ -1,4 +1,4 @@
-module Main exposing (Model, Msg(..), init, main, update, view)
+port module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
 import Css exposing (..)
@@ -13,14 +13,19 @@ import Item exposing (Item, Kind(..))
 ---- PROGRAM ----
 
 
-main : Program () Model Msg
+main : Program Flags Model Msg
 main =
     Browser.element
         { view = \m -> view m |> toUnstyled
-        , init = \_ -> init
+        , init = init
         , update = update
         , subscriptions = always Sub.none
         }
+
+
+type alias Flags =
+    { identifiedItemNames : List String
+    }
 
 
 
@@ -31,14 +36,16 @@ type alias Model =
     { inventory : Result String (List Item)
     , searchInput : String
     , showCredit : Bool
+    , identifiedItemNames : List String
     }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : Flags -> ( Model, Cmd Msg )
+init flags =
     ( { inventory = Inventory.generate
       , searchInput = ""
       , showCredit = True
+      , identifiedItemNames = flags.identifiedItemNames
       }
     , Cmd.none
     )
@@ -50,6 +57,7 @@ init =
 
 type Msg
     = UpdateSearchInput String
+    | MarkItemAsIdentified Item Bool
     | HideCredit
 
 
@@ -58,6 +66,17 @@ update msg model =
     case msg of
         UpdateSearchInput t ->
             ( { model | searchInput = t }, Cmd.none )
+
+        MarkItemAsIdentified item identified ->
+            let
+                updatedList =
+                    if identified then
+                        Item.name item :: model.identifiedItemNames
+
+                    else
+                        List.filter (\n -> n /= Item.name item) model.identifiedItemNames
+            in
+            ( { model | identifiedItemNames = updatedList }, storeIdentifiedItemNames updatedList )
 
         HideCredit ->
             ( { model | showCredit = False }, Cmd.none )
@@ -128,21 +147,41 @@ viewItems model =
                     , th [] [ text "名前" ]
                     , th [] [ text "買値" ]
                     , th [] [ text "売値" ]
+                    , th [] [ text "識別済" ]
                     ]
                 , tbody []
-                    (List.map viewItemRow filteredItems)
+                    (List.map (viewItemRow model) filteredItems)
                 ]
 
 
-viewItemRow : Item -> Html Msg
-viewItemRow item =
+viewItemRow : Model -> Item -> Html Msg
+viewItemRow model item =
     let
         i =
             Item.exposeInternals item
+
+        identified =
+            List.member i.name model.identifiedItemNames
     in
     tr []
         [ td [] [ text (i.kind |> Item.kindToString) ]
         , td [] [ text i.name ]
         , td [] [ text (String.fromInt i.buyPrice) ]
         , td [] [ text (String.fromInt i.sellPrice) ]
+        , td []
+            [ input
+                [ type_ "checkbox"
+                , class "form-check-input position-static"
+                , Html.Styled.Attributes.checked identified
+                , onClick (MarkItemAsIdentified item (not identified))
+                ]
+                []
+            ]
         ]
+
+
+
+---- PORT ----
+
+
+port storeIdentifiedItemNames : List String -> Cmd msg

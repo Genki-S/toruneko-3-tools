@@ -29,7 +29,7 @@ main =
 
 type alias Model =
     { inventory : Result String (List Item)
-    , priceInput : Int
+    , searchInput : String
     , showCredit : Bool
     }
 
@@ -37,7 +37,7 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     ( { inventory = Inventory.generate
-      , priceInput = 0
+      , searchInput = ""
       , showCredit = True
       }
     , Cmd.none
@@ -49,23 +49,15 @@ init =
 
 
 type Msg
-    = PressNumber Int
-    | ClearInput
+    = UpdateSearchInput String
     | HideCredit
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        PressNumber i ->
-            let
-                newPriceInput =
-                    model.priceInput * 10 + i
-            in
-            ( { model | priceInput = newPriceInput }, Cmd.none )
-
-        ClearInput ->
-            ( { model | priceInput = 0 }, Cmd.none )
+        UpdateSearchInput t ->
+            ( { model | searchInput = t }, Cmd.none )
 
         HideCredit ->
             ( { model | showCredit = False }, Cmd.none )
@@ -83,18 +75,8 @@ view model =
 
           else
             span [] []
-        , div [ css [ Css.height (pct 60), overflowY scroll ] ] [ viewItems model ]
-        , div
-            [ css
-                [ position fixed
-                , Css.height (pct 40)
-                , bottom (px 0)
-                , right (px 0)
-                , left (px 0)
-                , backgroundColor (hex "EEEEEE")
-                ]
-            ]
-            [ viewPriceInput model ]
+        , div [] [ viewSearchBox model ]
+        , div [] [ viewItems model ]
         ]
 
 
@@ -109,6 +91,18 @@ viewCredit =
         ]
 
 
+viewSearchBox : Model -> Html Msg
+viewSearchBox model =
+    input
+        [ class "form-control"
+        , type_ "text"
+        , placeholder "アイテム名 / 買値 / 売値"
+        , value model.searchInput
+        , onInput UpdateSearchInput
+        ]
+        []
+
+
 viewItems : Model -> Html Msg
 viewItems model =
     case model.inventory of
@@ -117,20 +111,16 @@ viewItems model =
 
         Ok items ->
             let
-                priceMatches item =
-                    let
-                        i =
-                            Item.exposeInternals item
-                    in
-                    model.priceInput == i.buyPrice || model.priceInput == i.sellPrice
+                filter item =
+                    case String.toInt model.searchInput of
+                        Just price ->
+                            price == Item.buyPrice item || price == Item.sellPrice item
+
+                        Nothing ->
+                            String.contains model.searchInput (Item.name item)
 
                 filteredItems =
-                    case model.priceInput of
-                        0 ->
-                            items
-
-                        _ ->
-                            List.filter priceMatches items
+                    List.filter filter items
             in
             Html.Styled.table [ class "table" ]
                 [ thead [ class "thead-dark" ]
@@ -156,63 +146,3 @@ viewItemRow item =
         , td [] [ text (String.fromInt i.buyPrice) ]
         , td [] [ text (String.fromInt i.sellPrice) ]
         ]
-
-
-viewPriceInput : Model -> Html Msg
-viewPriceInput model =
-    div [ class "container", css [ padding (px 10) ] ]
-        [ input
-            [ class "form-control"
-            , type_ "number"
-            , value (String.fromInt model.priceInput)
-            , Html.Styled.Attributes.disabled True
-            , css [ textAlign right ]
-            ]
-            []
-        , viewCalculator model
-        ]
-
-
-viewCalculator : Model -> Html Msg
-viewCalculator model =
-    let
-        numberRows =
-            [ [ 7, 8, 9 ], [ 4, 5, 6 ], [ 1, 2, 3 ] ]
-                |> List.map (viewCalculatorRow model)
-
-        lastRow =
-            [ tr []
-                [ viewCalculatorCell model 0 2
-                , td [] [ viewCalculatorButton model ClearInput "C" ]
-                ]
-            ]
-
-        rows =
-            List.append numberRows lastRow
-    in
-    Html.Styled.table
-        [ class "table table-borderless"
-        , css [ textAlign center ]
-        ]
-        rows
-
-
-viewCalculatorRow : Model -> List Int -> Html Msg
-viewCalculatorRow model numbers =
-    tr [] (List.map (\n -> viewCalculatorCell model n 1) numbers)
-
-
-viewCalculatorCell : Model -> Int -> Int -> Html Msg
-viewCalculatorCell model n cs =
-    td [ colspan cs ]
-        [ viewCalculatorButton model (PressNumber n) (String.fromInt n) ]
-
-
-viewCalculatorButton : Model -> Msg -> String -> Html Msg
-viewCalculatorButton model msgOnClick s =
-    button
-        [ class "btn btn-light"
-        , onClick msgOnClick
-        , css [ Css.width (pct 100) ]
-        ]
-        [ text s ]

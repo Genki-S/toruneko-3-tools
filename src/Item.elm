@@ -1,4 +1,4 @@
-module Item exposing (Item, Kind(..), exposeInternals, kindToString, new)
+module Item exposing (Item, Kind(..), buyPrice, exposeInternals, kindToString, name, new, sellPrice)
 
 
 type Item
@@ -22,18 +22,33 @@ type alias Internals =
 
 
 new : Kind -> String -> Int -> Int -> Item
-new kind name buyPrice sellPrice =
+new kind name_ buyPrice_ sellPrice_ =
     Item
         { kind = kind
-        , name = name
-        , buyPrice = buyPrice
-        , sellPrice = sellPrice
+        , name = name_
+        , buyPrice = buyPrice_
+        , sellPrice = sellPrice_
         }
 
 
 exposeInternals : Item -> Internals
 exposeInternals (Item i) =
     i
+
+
+name : Item -> String
+name (Item i) =
+    i.name
+
+
+buyPrice : Item -> Int
+buyPrice (Item i) =
+    i.buyPrice
+
+
+sellPrice : Item -> Int
+sellPrice (Item i) =
+    i.sellPrice
 
 
 kindToString : Kind -> String

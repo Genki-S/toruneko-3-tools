@@ -2,6 +2,7 @@ port module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
 import Css exposing (..)
+import Filter exposing (Filter(..))
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
 import Html.Styled.Events exposing (..)
@@ -37,6 +38,7 @@ type alias Model =
     , searchInput : String
     , showCredit : Bool
     , identifiedItemNames : List String
+    , filterGroups : List FilterGroup
     }
 
 
@@ -46,9 +48,88 @@ init flags =
       , searchInput = ""
       , showCredit = True
       , identifiedItemNames = flags.identifiedItemNames
+      , filterGroups =
+            [ { id = IdentifiedStateFilters
+              , filterItems =
+                    [ { id = FilterIdentifiedItems
+                      , displayName = "識別済"
+                      , toImpl = \ingredients -> IdentifiedFilter ingredients.identifiedItemNames True
+                      , enabled = False
+                      }
+                    , { id = FilterNonIdentifiedItems
+                      , displayName = "未識別"
+                      , toImpl = \ingredients -> IdentifiedFilter ingredients.identifiedItemNames False
+                      , enabled = False
+                      }
+                    ]
+              }
+            , { id = ItemKindFilters
+              , filterItems =
+                    [ { id = FilterScrolls
+                      , displayName = "巻物"
+                      , toImpl = \_ -> ItemKindFilter Scroll
+                      , enabled = False
+                      }
+                    , { id = FilterHerbs
+                      , displayName = "草"
+                      , toImpl = \_ -> ItemKindFilter Herb
+                      , enabled = False
+                      }
+                    , { id = FilterRings
+                      , displayName = "指輪"
+                      , toImpl = \_ -> ItemKindFilter Ring
+                      , enabled = False
+                      }
+                    , { id = FilterWands
+                      , displayName = "杖"
+                      , toImpl = \_ -> ItemKindFilter Wand
+                      , enabled = False
+                      }
+                    , { id = FilterVases
+                      , displayName = "壺"
+                      , toImpl = \_ -> ItemKindFilter Vase
+                      , enabled = False
+                      }
+                    ]
+              }
+            ]
       }
     , Cmd.none
     )
+
+
+type alias FilterIngredients =
+    { identifiedItemNames : List String
+    }
+
+
+type alias FilterItem =
+    { id : FilterItemID
+    , displayName : String
+    , toImpl : FilterIngredients -> Filter
+    , enabled : Bool
+    }
+
+
+type FilterItemID
+    = FilterIdentifiedItems
+    | FilterNonIdentifiedItems
+    | FilterScrolls
+    | FilterHerbs
+    | FilterRings
+    | FilterWands
+    | FilterVases
+
+
+type alias FilterGroup =
+    { id : FilterGroupID
+    , filterItems : List FilterItem
+    }
+
+
+type FilterGroupID
+    = IdentifiedStateFilters
+    | ItemKindFilters
 
 
 
@@ -59,6 +140,7 @@ type Msg
     = UpdateSearchInput String
     | MarkItemAsIdentified Item Bool
     | HideCredit
+    | EnableFilter FilterGroupID FilterItemID Bool
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -81,6 +163,34 @@ update msg model =
         HideCredit ->
             ( { model | showCredit = False }, Cmd.none )
 
+        EnableFilter groupID itemID enabled ->
+            let
+                updatedGroups =
+                    model.filterGroups
+                        |> List.map
+                            (\group ->
+                                if group.id /= groupID then
+                                    group
+
+                                else
+                                    let
+                                        updatedItems =
+                                            group.filterItems
+                                                |> List.map
+                                                    (\item ->
+                                                        if item.id /= itemID then
+                                                            -- filters are mutually exclusive within group
+                                                            { item | enabled = False }
+
+                                                        else
+                                                            { item | enabled = enabled }
+                                                    )
+                                    in
+                                    { group | filterItems = updatedItems }
+                            )
+            in
+            ( { model | filterGroups = updatedGroups }, Cmd.none )
+
 
 
 ---- VIEW ----
@@ -95,6 +205,7 @@ view model =
           else
             span [] []
         , div [] [ viewSearchBox model ]
+        , div [] [ viewFilterGroups model ]
         , div [] [ viewItems model ]
         ]
 
@@ -122,6 +233,36 @@ viewSearchBox model =
         []
 
 
+viewFilterGroups : Model -> Html Msg
+viewFilterGroups model =
+    div []
+        (List.map viewFilterGroup model.filterGroups)
+
+
+viewFilterGroup : FilterGroup -> Html Msg
+viewFilterGroup filterGroup =
+    div []
+        (List.map (viewFilterItem filterGroup.id) filterGroup.filterItems)
+
+
+viewFilterItem : FilterGroupID -> FilterItem -> Html Msg
+viewFilterItem groupID filterItem =
+    let
+        badgeClass =
+            if filterItem.enabled then
+                "badge badge-info"
+
+            else
+                "badge badge-light"
+    in
+    span
+        [ class badgeClass
+        , css [ margin (px 5), padding (px 15), cursor pointer ]
+        , onClick (EnableFilter groupID filterItem.id (not filterItem.enabled))
+        ]
+        [ text filterItem.displayName ]
+
+
 viewItems : Model -> Html Msg
 viewItems model =
     case model.inventory of
@@ -130,16 +271,18 @@ viewItems model =
 
         Ok items ->
             let
-                filter item =
-                    case String.toInt model.searchInput of
-                        Just price ->
-                            price == Item.buyPrice item || price == Item.sellPrice item
+                filterIngredients =
+                    { identifiedItemNames = model.identifiedItemNames
+                    }
 
-                        Nothing ->
-                            String.contains model.searchInput (Item.name item)
+                filters =
+                    List.concatMap (\group -> group.filterItems) model.filterGroups
+                        |> List.filter (\item -> item.enabled)
+                        |> List.map (\item -> item.toImpl filterIngredients)
+                        |> List.append [ FreeTextFilter model.searchInput ]
 
                 filteredItems =
-                    List.filter filter items
+                    Filter.applyFilters filters items
             in
             Html.Styled.table [ class "table" ]
                 [ thead [ class "thead-dark" ]

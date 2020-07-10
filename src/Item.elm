@@ -1,4 +1,4 @@
-module Item exposing (Item, Kind(..), buyPrice, exposeInternals, kindToString, name, new, sellPrice)
+module Item exposing (Item, Kind(..), buyPrice, exposeInternals, kind, kindToString, name, new, sellPrice)
 
 
 type Item
@@ -22,9 +22,9 @@ type alias Internals =
 
 
 new : Kind -> String -> Int -> Int -> Item
-new kind name_ buyPrice_ sellPrice_ =
+new kind_ name_ buyPrice_ sellPrice_ =
     Item
-        { kind = kind
+        { kind = kind_
         , name = name_
         , buyPrice = buyPrice_
         , sellPrice = sellPrice_
@@ -34,6 +34,11 @@ new kind name_ buyPrice_ sellPrice_ =
 exposeInternals : Item -> Internals
 exposeInternals (Item i) =
     i
+
+
+kind : Item -> Kind
+kind (Item i) =
+    i.kind
 
 
 name : Item -> String
@@ -52,8 +57,8 @@ sellPrice (Item i) =
 
 
 kindToString : Kind -> String
-kindToString kind =
-    case kind of
+kindToString kind_ =
+    case kind_ of
         Scroll ->
             "巻物"
 

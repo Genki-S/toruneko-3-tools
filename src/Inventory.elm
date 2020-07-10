@@ -12,8 +12,8 @@ generate =
 rings : List Item
 rings =
     let
-        gen name buyPrice sellPrice =
-            Item.new Ring name buyPrice sellPrice
+        gen name hiragana buyPrice sellPrice =
+            Item.new Ring name hiragana buyPrice sellPrice
     in
     [ gen "とうぞくの指輪" "とうぞくのゆびわ" 15000 2500
     , gen "ワナぬけの指輪" "わなぬけのゆびわ" 15000 7500
@@ -71,8 +71,8 @@ rings =
 vases : List Item
 vases =
     let
-        gen name buyPrice sellPrice =
-            Item.new Vase name buyPrice sellPrice
+        gen name hiragana buyPrice sellPrice =
+            Item.new Vase name hiragana buyPrice sellPrice
     in
     [ gen "とじこめの壺" "とじこめのつぼ" 1500 750
     , gen "父のとっくり" "ちちのとっくり" 1500 750
@@ -102,8 +102,8 @@ vases =
 wands : List Item
 wands =
     let
-        gen name buyPrice sellPrice =
-            Item.new Wand name buyPrice sellPrice
+        gen name hiragana buyPrice sellPrice =
+            Item.new Wand name hiragana buyPrice sellPrice
     in
     [ gen "トンネルの杖" "とんねるのつえ" 500 200
     , gen "ホイミの杖" "*のつえ" 500 250
@@ -159,8 +159,8 @@ wands =
 herbs : List Item
 herbs =
     let
-        gen name buyPrice sellPrice =
-            Item.new Herb name buyPrice sellPrice
+        gen name hiragana buyPrice sellPrice =
+            Item.new Herb name hiragana buyPrice sellPrice
     in
     [ gen "パルプンテの巻物" "*のまきもの" 0 0
     , gen "でたらめ草" "でたらめくさ" 100 50
@@ -199,8 +199,8 @@ herbs =
 scrolls : List Item
 scrolls =
     let
-        gen name buyPrice sellPrice =
-            Item.new Scroll name buyPrice sellPrice
+        gen name hiragana buyPrice sellPrice =
+            Item.new Scroll name hiragana buyPrice sellPrice
     in
     [ gen "リレミトの巻物" "*のまきもの" 100 50
     , gen "大部屋の巻物" "おーべやのまきもの" 300 150

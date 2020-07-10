@@ -34,4 +34,4 @@ toFilterFunc f item =
                     price == Item.buyPrice item || price == Item.sellPrice item
 
                 Nothing ->
-                    String.contains s (Item.name item)
+                    String.contains s (Item.name item) || String.contains s (Item.hiraganaName item)

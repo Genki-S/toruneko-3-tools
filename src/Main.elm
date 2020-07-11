@@ -34,7 +34,8 @@ type alias Flags =
 
 
 type alias Model =
-    { inventory : Result String (List Item)
+    { currentPage : Page
+    , inventory : Result String (List Item)
     , searchInput : String
     , showCredit : Bool
     , identifiedItemNames : List String
@@ -44,7 +45,8 @@ type alias Model =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( { inventory = Inventory.generate
+    ( { currentPage = PageItemInventory
+      , inventory = Inventory.generate
       , searchInput = ""
       , showCredit = True
       , identifiedItemNames = flags.identifiedItemNames
@@ -98,6 +100,11 @@ init flags =
     )
 
 
+type Page
+    = PageItemInventory
+    | PageExperienceTable
+
+
 type alias FilterIngredients =
     { identifiedItemNames : List String
     }
@@ -137,7 +144,8 @@ type FilterGroupID
 
 
 type Msg
-    = UpdateSearchInput String
+    = ChangePage Page
+    | UpdateSearchInput String
     | MarkItemAsIdentified Item Bool
     | ClearIdentifiedItems
     | HideCredit
@@ -147,6 +155,9 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        ChangePage page ->
+            ( { model | currentPage = page }, Cmd.none )
+
         UpdateSearchInput t ->
             ( { model | searchInput = t }, Cmd.none )
 
@@ -203,15 +214,58 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div [ class "container", css [ Css.height (pct 100) ] ]
-        [ if model.showCredit then
+        [ viewHeader model
+        , if model.showCredit then
             viewCredit
 
           else
             span [] []
-        , div [] [ viewIdentifiedStateClearButton model ]
-        , div [] [ viewSearchBox model ]
-        , div [] [ viewFilterGroups model ]
-        , div [] [ viewItems model ]
+        , case model.currentPage of
+            PageItemInventory ->
+                viewItemInventory model
+
+            PageExperienceTable ->
+                div [] [ text "TODO" ]
+        ]
+
+
+viewHeader : Model -> Html Msg
+viewHeader model =
+    let
+        inventoryLinkClass =
+            if model.currentPage == PageItemInventory then
+                "nav-item active"
+
+            else
+                "nav-item"
+
+        experienceLinkClass =
+            if model.currentPage == PageExperienceTable then
+                "nav-item active"
+
+            else
+                "nav-item"
+    in
+    nav [ class "navbar navbar-dark bg-dark" ]
+        [ span [ class "navbar-brand" ]
+            [ text "トルネコ3ツール" ]
+        , button [ attribute "aria-controls" "navbarSupportedContent", attribute "aria-expanded" "false", attribute "aria-label" "Toggle navigation", class "navbar-toggler", attribute "data-target" "#navbarSupportedContent", attribute "data-toggle" "collapse", type_ "button" ]
+            [ span [ class "navbar-toggler-icon" ]
+                []
+            ]
+        , div [ class "collapse navbar-collapse", id "navbarSupportedContent" ]
+            [ ul [ class "navbar-nav mr-auto" ]
+                [ li [ class inventoryLinkClass ]
+                    [ a [ class "nav-link", href "#", onClick (ChangePage PageItemInventory) ]
+                        [ text "アイテム検索/管理"
+                        ]
+                    ]
+                , li [ class experienceLinkClass ]
+                    [ a [ class "nav-link", href "#", onClick (ChangePage PageExperienceTable) ]
+                        [ text "経験値表" ]
+                    ]
+                ]
+            ]
         ]
 
 
@@ -226,9 +280,19 @@ viewCredit =
         ]
 
 
+viewItemInventory : Model -> Html Msg
+viewItemInventory model =
+    div []
+        [ div [] [ viewIdentifiedStateClearButton model ]
+        , div [] [ viewSearchBox model ]
+        , div [] [ viewFilterGroups model ]
+        , div [] [ viewItems model ]
+        ]
+
+
 viewIdentifiedStateClearButton : Model -> Html Msg
 viewIdentifiedStateClearButton model =
-    div [ css [ marginBottom (px 5) ] ]
+    div [ css [ marginTop (px 5), marginBottom (px 5) ] ]
         [ button [ class "btn btn-danger", onClick ClearIdentifiedItems ]
             [ text "識別リセット" ]
         ]

@@ -162,8 +162,7 @@ herbs =
         gen name hiragana buyPrice sellPrice =
             Item.new Herb name hiragana buyPrice sellPrice
     in
-    [ gen "パルプンテの巻物" "ぱるぷんてのまきもの" 0 0
-    , gen "でたらめ草" "でたらめそう" 100 50
+    [ gen "でたらめ草" "でたらめそう" 100 50
     , gen "踊り草" "おどりそう" 100 50
     , gen "かなしばりのたね" "かなしばりのたね" 100 50
     , gen "目覚まし草" "めざましそう" 100 50
@@ -202,7 +201,8 @@ scrolls =
         gen name hiragana buyPrice sellPrice =
             Item.new Scroll name hiragana buyPrice sellPrice
     in
-    [ gen "リレミトの巻物" "りれみとのまきもの" 100 50
+    [ gen "パルプンテの巻物" "ぱるぷんてのまきもの" 0 0
+    , gen "リレミトの巻物" "りれみとのまきもの" 100 50
     , gen "大部屋の巻物" "おおべやのまきもの" 300 150
     , gen "聖城の巻物" "せいじょうのまきもの" 400 200
     , gen "氷結の巻物" "ひょうけつのまきもの" 400 200

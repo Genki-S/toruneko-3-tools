@@ -2,6 +2,7 @@ port module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
 import Css exposing (..)
+import ExperienceTable
 import Filter exposing (Filter(..))
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
@@ -225,7 +226,7 @@ view model =
                 viewItemInventory model
 
             PageExperienceTable ->
-                div [] [ text "TODO" ]
+                viewExperienceTable model
         ]
 
 
@@ -397,6 +398,53 @@ viewItemRow model item =
                 ]
                 []
             ]
+        ]
+
+
+viewExperienceTable : Model -> Html Msg
+viewExperienceTable model =
+    let
+        torunekoTable =
+            ExperienceTable.toruneko
+
+        poporoTable =
+            ExperienceTable.poporo
+
+        zipped =
+            List.map2 Tuple.pair torunekoTable poporoTable
+                |> List.indexedMap Tuple.pair
+                |> List.map (Tuple.mapFirst (\i -> i + 1))
+    in
+    Html.Styled.table [ class "table item-table", css [ marginTop (px 5) ] ]
+        [ thead [ class "thead-dark" ]
+            [ th [] [ text "レベル" ]
+            , th [] [ text "トルネコ" ]
+            , th [] [ text "ポポロ" ]
+            ]
+        , tbody []
+            (List.map viewExperienceRow zipped)
+        ]
+
+
+viewExperienceRow : ( Int, ( Int, Int ) ) -> Html Msg
+viewExperienceRow data =
+    let
+        level =
+            Tuple.first data
+
+        exp =
+            Tuple.second data
+
+        toruneko =
+            Tuple.first exp
+
+        poporo =
+            Tuple.second exp
+    in
+    tr []
+        [ td [] [ text (String.fromInt level) ]
+        , td [] [ text (String.fromInt toruneko) ]
+        , td [] [ text (String.fromInt poporo) ]
         ]
 
 

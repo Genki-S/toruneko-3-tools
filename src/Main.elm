@@ -147,6 +147,7 @@ type FilterGroupID
 type Msg
     = ChangePage Page
     | UpdateSearchInput String
+    | ClearSearchInput
     | MarkItemAsIdentified Item Bool
     | ClearIdentifiedItems
     | HideCredit
@@ -161,6 +162,9 @@ update msg model =
 
         UpdateSearchInput t ->
             ( { model | searchInput = t }, Cmd.none )
+
+        ClearSearchInput ->
+            ( { model | searchInput = "" }, Cmd.none )
 
         MarkItemAsIdentified item identified ->
             let
@@ -301,14 +305,17 @@ viewIdentifiedStateClearButton model =
 
 viewSearchBox : Model -> Html Msg
 viewSearchBox model =
-    input
-        [ class "form-control"
-        , type_ "text"
-        , placeholder "アイテム名 / 買値 / 売値"
-        , value model.searchInput
-        , onInput UpdateSearchInput
+    div [ class "input-group" ]
+        [ input
+            [ class "form-control"
+            , type_ "text"
+            , placeholder "アイテム名 / 買値 / 売値"
+            , value model.searchInput
+            , onInput UpdateSearchInput
+            ]
+            []
+        , button [ class "btn btn-light", onClick ClearSearchInput ] [ text "X" ]
         ]
-        []
 
 
 viewFilterGroups : Model -> Html Msg

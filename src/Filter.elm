@@ -1,5 +1,6 @@
 module Filter exposing (Filter(..), applyFilter, applyFilters)
 
+import Dungeon exposing (Dungeon(..))
 import Item exposing (Item, Kind(..))
 
 
@@ -7,6 +8,7 @@ type Filter
     = IdentifiedFilter (List String) Bool
     | ItemKindFilter Kind
     | FreeTextFilter String
+    | DungeonFilter Dungeon
 
 
 applyFilters : List Filter -> List Item -> List Item
@@ -35,3 +37,6 @@ toFilterFunc f item =
 
                 Nothing ->
                     String.contains s (Item.name item) || String.contains s (Item.hiraganaName item)
+
+        DungeonFilter dungeon ->
+            List.member dungeon (Item.dungeons item)

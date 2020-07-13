@@ -1,4 +1,18 @@
-module Item exposing (Item, Kind(..), buyPrice, exposeInternals, hiraganaName, kind, kindToString, name, new, sellPrice)
+module Item exposing
+    ( Item
+    , Kind(..)
+    , buyPrice
+    , dungeons
+    , exposeInternals
+    , hiraganaName
+    , kind
+    , kindToString
+    , name
+    , new
+    , sellPrice
+    )
+
+import Dungeon exposing (Dungeon(..))
 
 
 type Item
@@ -19,17 +33,19 @@ type alias Internals =
     , hiraganaName : String
     , buyPrice : Int
     , sellPrice : Int
+    , dungeons : List Dungeon
     }
 
 
-new : Kind -> String -> String -> Int -> Int -> Item
-new kind_ name_ hiraganaName_ buyPrice_ sellPrice_ =
+new : Kind -> String -> String -> Int -> Int -> List Dungeon -> Item
+new kind_ name_ hiraganaName_ buyPrice_ sellPrice_ dungeons_ =
     Item
         { kind = kind_
         , name = name_
         , hiraganaName = hiraganaName_
         , buyPrice = buyPrice_
         , sellPrice = sellPrice_
+        , dungeons = dungeons_
         }
 
 
@@ -61,6 +77,11 @@ buyPrice (Item i) =
 sellPrice : Item -> Int
 sellPrice (Item i) =
     i.sellPrice
+
+
+dungeons : Item -> List Dungeon
+dungeons (Item i) =
+    i.dungeons
 
 
 kindToString : Kind -> String
